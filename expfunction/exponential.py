@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+
+#=======================================================================
+#                        General Documentation
+
+"""
+"""
+#---------------- Module General Import and Declarations ---------------
+import numpy as np
+import scipy.misc as spm
+import math
+import time
+
+
+#-------------------- General Function: exponential -----------------------
+def exponential(x, tol=1e-8):
+    '''Calculate e^x using a series expansion.
+    
+    Calculates an approximation to e^x by summing successive terms of
+    (x^n / n!) as n goes from 0 to infinity - to *at least* a tolerance
+    that defaults to 1 x 10^-8 unless specified explicitly.
+    The partial series will be evaluated to term N where N satisfies the
+    bound tol > |(3*x^(N+1)/(N+1)!| (vis Taylor Theorum, with 3 approximating e) 
+
+    :param x: exponent to which e will (approximately) be raised
+    :param tol: upper bound on error between approximation and e
+    :type x: double or float
+    :type tol: double or float
+    :returns: Taylor approximation of e^x where R() <= tol
+    :rtype: double
+    
+    :Example:
+
+    
+    '''
+    # Cast x to NumPy double.  This avoids some accuracy issues at higher
+    # values of x
+    x = np.float64(x)
+
+    # Approximate solution to determine N, a number of terms required to meet
+    # tolerance tol (although with some margin, as this approximation is...
+    # approximate)
+    # N1: a good first approximation of the N required to meet tol
+    N1 = math.ceil(x*math.log10(3/tol)+math.log10(x))
+    # But N must also satisfy log((N+1)!) > N1
+    N2 = math.ceil(math.log10(math.factorial(N1)))
+    
+    # Should N2 not exceed N1, which is more likely at large tol or large x,
+    # increase N2 by the difference between N1 and N2, rounded up.
+    # This converges very quickly because log((S!)) increases ~ proportionally
+    # to delta-S.
+    while (N2 < N1):
+        N2 += math.ceil(N1 - math.ceil(math.log10(math.factorial(N2))))
+    
+    # Create a 1D array filled with values identical to each term's index
+    a = np.arange(N2)
+
+    #Final result is the sum of the partial sequence, represented by a numpy
+    #array.
+    result = np.sum(( x**a ) / spm.factorial(a))
+
+    return result
+
+def timeit(func, x, tol):
+    '''Simple timer function (not to be confused with timeit.timeit)
+    for testing the performance of exponential vs nexponential
+
+    Simply prints the name of the function, and then runs it with the provided
+    parameters and prints out the 
+
+    :param func: function name, unquoted.  e.g. d.distance, d.ndistance
+    :param x: 1D ndarray of X positions ("abscissae") of arbitrary size
+    :param y: 1D ndarray of Y positions ("ordinates") of arbitrary size
+    :param pt: [x, y] position from which to calc distances
+    :type func: python function
+    :type x: 1D ndarray of numeric type
+    :type y: 1D ndarray of numeric type
+    :type pt: ndarray of size 2 containing numerical x and y coordinates
+
+    :Example:
+
+    >>> import numpy as N
+    >>> from distance import *
+    >>> x = N.array([-3, -2, -1, 0, 1, 2, 3])
+    >>> y = N.array([0, 1, 2, 3, 4])
+    >>> pt = N.array([0, 0])
+    >>> timeit(distance, x, y, pt)
+    <function distance at 0x7fea77b00f28>
+    0.0004887580871582031
+
+    >>> timeit(ndistance, x, y, pt)
+    <function ndistance at 0x7fea76b01f28>
+    0.0007753372192382812
+    
+    '''
+    print(str(func))
+    start = time.time()
+    result = func(x, tol)
+    end = time.time()
+    print(end - start)
+
+if __name__ == "__main__":
+    '''Run basic tests of distance functions.
+    1) Output of distance() using assigned test values
+    2) Output of ndistance(), the naive version.
+    3) Comparison of runtimes
+    '''
+    # Test values
+    x = np.arange(5)
+    y = np.arange(4)
+    pt = [-2.3, 3.3]
+   
+    # Testing output of actual function
+    print("distance(): using numpy array operations")
+    print(distance(x, y, pt))
+    print("\n")
+    
+    # testing output of naive function for comparison
+    print("ndistance(): using naive for loop approach")
+    print(ndistance(x, y, pt))
+    print("\n")
+   
+    # Compare runtimes
+    timeit(distance, x, y, pt)
+    timeit(ndistance, x, y, pt)
+

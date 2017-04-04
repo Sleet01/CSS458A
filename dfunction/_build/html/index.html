@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to distance’s documentation! &#8212; distance 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-distance-s-documentation">
+<h1>Welcome to distance&#8217;s documentation!<a class="headerlink" href="#welcome-to-distance-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<span class="target" id="module-distance"></span><p>CSS458 Assignment 1: Python: Distance Function - Martin L. Metke</p>
+<p>Contains two distance-computing functions and one utility function:</p>
+<dl class="function">
+<dt id="distance.distance">
+<code class="descclassname">distance.</code><code class="descname">distance</code><span class="sig-paren">(</span><em>ndarray_x</em>, <em>ndarray_y</em>, <em>point</em><span class="sig-paren">)</span><a class="headerlink" href="#distance.distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a 2D ndarray of distances between each (x, y) and point.
+Uses numpy array operations for speed.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="distance.ndistance">
+<code class="descclassname">distance.</code><code class="descname">ndistance</code><span class="sig-paren">(</span><em>ndarray_x</em>, <em>ndarray_y</em>, <em>point</em><span class="sig-paren">)</span><a class="headerlink" href="#distance.ndistance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a 2D ndarray of distances a la <em>distance</em> .
+Uses naive nested loop approach for... slowth.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="distance.timeit">
+<code class="descclassname">distance.</code><code class="descname">timeit</code><span class="sig-paren">(</span><em>func</em>, <em>x</em>, <em>y</em>, <em>point</em><span class="sig-paren">)</span><a class="headerlink" href="#distance.timeit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run one of the functions above, passed by name after importing,
+to determine runtime with given x, y, and point parameters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">distance.</code><code class="descname">distance</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>pt</em><span class="sig-paren">)</span></dt>
+<dd><p>Calculates the distance between a set of x, y coordinates and a 
+specified 2D point.</p>
+<p>Given a vector of abscissae (x) and a vector of ordinates (y) that
+define a cartesian grid of shape (Y.len, X.len) coordinates,
+this function calculates the distance between each (x, y) pair and the
+point pt.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>1D ndarray of numeric type</em>) &#8211; 1D ndarray of X positions (&#8220;abscissae&#8221;) of arbitrary size</li>
+<li><strong>y</strong> (<em>1D ndarray of numeric type</em>) &#8211; 1D ndarray of Y positions (&#8220;ordinates&#8221;) of arbitrary size</li>
+<li><strong>pt</strong> (<em>ndarray of size 2 containing numerical x and y coordinates</em>) &#8211; [x, y] position from which to calc distances</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">2D ndarray of distances between x[0..n], y[0..n], and pt</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">ndarray of type float</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Example:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">distance</span> <span class="k">as</span> <span class="nn">d</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pt</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">array_str</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pt</span><span class="p">),</span> <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="go">[[ 3.    2.    1.    0.    1.    2.    3.  ]</span>
+<span class="go"> [ 3.16  2.24  1.41  1.    1.41  2.24  3.16]</span>
+<span class="go"> [ 3.61  2.83  2.24  2.    2.24  2.83  3.61]</span>
+<span class="go"> [ 4.24  3.61  3.16  3.    3.16  3.61  4.24]</span>
+<span class="go"> [ 5.    4.47  4.12  4.    4.12  4.47  5.  ]]</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">performance of this function scales much better than naive
+nested-for-loop version; for 10,000 coordinates (5000 x 200) this function
+completes in ~ 0.045s where the naive version complets in ~ 6.5s</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">distance.</code><code class="descname">ndistance</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>pt</em><span class="sig-paren">)</span></dt>
+<dd><p>Naive distance calculator using nested for loops</p>
+<p>Given a vector of abscissae (x) and a vector of ordinates (y) that
+define a cartesian grid of shape (Y.len, X.len) coordinates,
+this function calculates the distance between each (x, y) pair and the
+point pt.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>1D ndarray of numeric type</em>) &#8211; 1D ndarray of X positions (&#8220;abscissae&#8221;) of arbitrary size</li>
+<li><strong>y</strong> (<em>1D ndarray of numeric type</em>) &#8211; 1D ndarray of Y positions (&#8220;ordinates&#8221;) of arbitrary size</li>
+<li><strong>pt</strong> (<em>ndarray of size 2 containing numerical x and y coordinates</em>) &#8211; [x, y] position from which to calc distances</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">2D ndarray of distances between x[0..n], y[0..n], and pt</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">ndarray of type float</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Example:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">distance</span> <span class="k">import</span> <span class="n">ndistance</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pt</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">array_str</span><span class="p">(</span><span class="n">ndistance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pt</span><span class="p">),</span> <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="go">[[ 3.    2.    1.    0.    1.    2.    3.  ]</span>
+<span class="go"> [ 3.16  2.24  1.41  1.    1.41  2.24  3.16]</span>
+<span class="go"> [ 3.61  2.83  2.24  2.    2.24  2.83  3.61]</span>
+<span class="go"> [ 4.24  3.61  3.16  3.    3.16  3.61  4.24]</span>
+<span class="go"> [ 5.    4.47  4.12  4.    4.12  4.47  5.  ]]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">distance.</code><code class="descname">timeit</code><span class="sig-paren">(</span><em>func</em>, <em>x</em>, <em>y</em>, <em>pt</em><span class="sig-paren">)</span></dt>
+<dd><p>Simple timer function (not to be confused with timeit.timeit)
+for testing the performance of distance vs. ndistance</p>
+<p>Simply prints the name of the function, and then runs it with the provided
+parameters and prints out the</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>func</strong> (<em>python function</em>) &#8211; function name, unquoted.  e.g. d.distance, d.ndistance</li>
+<li><strong>x</strong> (<em>1D ndarray of numeric type</em>) &#8211; 1D ndarray of X positions (&#8220;abscissae&#8221;) of arbitrary size</li>
+<li><strong>y</strong> (<em>1D ndarray of numeric type</em>) &#8211; 1D ndarray of Y positions (&#8220;ordinates&#8221;) of arbitrary size</li>
+<li><strong>pt</strong> (<em>ndarray of size 2 containing numerical x and y coordinates</em>) &#8211; [x, y] position from which to calc distances</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Example:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">distance</span> <span class="k">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pt</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">timeit</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pt</span><span class="p">)</span>
+<span class="go">&lt;function distance at 0x7fea77b00f28&gt;</span>
+<span class="go">0.0004887580871582031</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">timeit</span><span class="p">(</span><span class="n">ndistance</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pt</span><span class="p">)</span>
+<span class="go">&lt;function ndistance at 0x7fea76b01f28&gt;</span>
+<span class="go">0.0007753372192382812</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to distance&#8217;s documentation!</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Martin L. Metke.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,196 @@
+#!/usr/bin/env python3
+
+#=======================================================================
+#                        General Documentation
+
+"""CSS458 Assignment 1: Python: Distance Function - Martin L. Metke
+
+   Contains two distance-computing functions and one utility function:
+
+   .. py:function:: distance(ndarray_x, ndarray_y, point)
+
+      Return a 2D ndarray of distances between each (x, y) and point.
+      Uses numpy array operations for speed.
+
+   .. py:function:: ndistance(ndarray_x, ndarray_y, point)
+      
+      Return a 2D ndarray of distances a la *distance* .
+      Uses naive nested loop approach for... slowth.
+   
+   .. py:function:: timeit(func, x, y, point)
+      
+      Run one of the functions above, passed by name after importing,
+      to determine runtime with given x, y, and point parameters.
+   
+"""
+#---------------- Module General Import and Declarations ---------------
+import numpy as np
+import time
+
+
+#-------------------- General Function: distance -----------------------
+def distance(x, y, pt):
+    '''Calculates the distance between a set of x, y coordinates and a 
+    specified 2D point.
+    
+    Given a vector of abscissae (x) and a vector of ordinates (y) that
+    define a cartesian grid of shape (Y.len, X.len) coordinates,
+    this function calculates the distance between each (x, y) pair and the
+    point pt.
+    
+
+    :param x: 1D ndarray of X positions ("abscissae") of arbitrary size
+    :param y: 1D ndarray of Y positions ("ordinates") of arbitrary size
+    :param pt: [x, y] position from which to calc distances
+    :type x: 1D ndarray of numeric type
+    :type y: 1D ndarray of numeric type
+    :type pt: ndarray of size 2 containing numerical x and y coordinates
+    :returns: 2D ndarray of distances between x[0..n], y[0..n], and pt
+    :rtype: ndarray of type float
+    
+    :Example:
+    
+    >>> import numpy as N
+    >>> import distance as d
+    >>> x = N.array([-3, -2, -1, 0, 1, 2, 3])
+    >>> y = N.array([0, 1, 2, 3, 4])
+    >>> pt = N.array([0, 0])
+    >>> print(N.array_str(d.distance(x, y, pt), precision=2))
+    [[ 3.    2.    1.    0.    1.    2.    3.  ]
+     [ 3.16  2.24  1.41  1.    1.41  2.24  3.16]
+     [ 3.61  2.83  2.24  2.    2.24  2.83  3.61]
+     [ 4.24  3.61  3.16  3.    3.16  3.61  4.24]
+     [ 5.    4.47  4.12  4.    4.12  4.47  5.  ]]
+    
+    .. note:: performance of this function scales much better than naive
+    nested-for-loop version; for 10,000 coordinates (5000 x 200) this function
+    completes in ~ 0.045s where the naive version complets in ~ 6.5s
+    
+    '''
+
+    # Cast pt to ndarray to make subsequent checks simpler
+    if (type(pt) == list):
+        pt = np.array(pt)
+
+    # Check that parameters are valid
+    # Raise ValueError if not
+    if (x.ndim != 1) or (y.ndim != 1) or not \
+            (pt.size == 2 and pt.shape == (2,)):
+        raise ValueError("parameters must be (1D, 1D, (2, ))")
+    else:
+        # create a pair of grids a la Lin ch. 4.6 so that array-syntax
+        # operations work correctly
+        xy = np.meshgrid(x, y)
+
+        # xy now contains identically-sized ndarrays of x and y locations; we
+        # can perform numpy array operations on them efficiently.
+        # Calculating the cartesian distance between e.g. xy[0], xy[1]
+        # coordinates and the location of pt is now a matter of applying the
+        # Pythagorean theorem to each coordinate pair at once.
+        return np.sqrt(np.square(xy[0]-pt[0]) + np.square(xy[1]-pt[1]))
+
+
+def ndistance(x, y, pt):
+    '''Naive distance calculator using nested for loops
+    
+    Given a vector of abscissae (x) and a vector of ordinates (y) that
+    define a cartesian grid of shape (Y.len, X.len) coordinates,
+    this function calculates the distance between each (x, y) pair and the
+    point pt.
+
+    :param x: 1D ndarray of X positions ("abscissae") of arbitrary size
+    :param y: 1D ndarray of Y positions ("ordinates") of arbitrary size
+    :param pt: [x, y] position from which to calc distances
+    :type x: 1D ndarray of numeric type
+    :type y: 1D ndarray of numeric type
+    :type pt: ndarray of size 2 containing numerical x and y coordinates
+    :returns: 2D ndarray of distances between x[0..n], y[0..n], and pt
+    :rtype: ndarray of type float
+
+    :Example:
+
+    >>> import numpy as N
+    >>> from distance import ndistance
+    >>> x = N.array([-3, -2, -1, 0, 1, 2, 3])
+    >>> y = N.array([0, 1, 2, 3, 4])
+    >>> pt = N.array([0, 0])
+    >>> print(N.array_str(ndistance(x, y, pt), precision=2))
+    [[ 3.    2.    1.    0.    1.    2.    3.  ]
+     [ 3.16  2.24  1.41  1.    1.41  2.24  3.16]
+     [ 3.61  2.83  2.24  2.    2.24  2.83  3.61]
+     [ 4.24  3.61  3.16  3.    3.16  3.61  4.24]
+     [ 5.    4.47  4.12  4.    4.12  4.47  5.  ]]
+    '''
+
+    # Load return values in y-row order, so loop is y, then x
+    retval = []
+    for i in range(y.size):
+        retval.append([])
+        for j in range(x.size):
+            retval[i].append((((x[j]-pt[0])**2)+(y[i]-pt[1])**2)**(0.5))
+    return np.array(retval)
+
+
+def timeit(func, x, y, pt):
+    '''Simple timer function (not to be confused with timeit.timeit)
+    for testing the performance of distance vs. ndistance
+
+    Simply prints the name of the function, and then runs it with the provided
+    parameters and prints out the 
+
+    :param func: function name, unquoted.  e.g. d.distance, d.ndistance
+    :param x: 1D ndarray of X positions ("abscissae") of arbitrary size
+    :param y: 1D ndarray of Y positions ("ordinates") of arbitrary size
+    :param pt: [x, y] position from which to calc distances
+    :type func: python function
+    :type x: 1D ndarray of numeric type
+    :type y: 1D ndarray of numeric type
+    :type pt: ndarray of size 2 containing numerical x and y coordinates
+
+    :Example:
+
+    >>> import numpy as N
+    >>> from distance import *
+    >>> x = N.array([-3, -2, -1, 0, 1, 2, 3])
+    >>> y = N.array([0, 1, 2, 3, 4])
+    >>> pt = N.array([0, 0])
+    >>> timeit(distance, x, y, pt)
+    <function distance at 0x7fea77b00f28>
+    0.0004887580871582031
+
+    >>> timeit(ndistance, x, y, pt)
+    <function ndistance at 0x7fea76b01f28>
+    0.0007753372192382812
+    
+    '''
+    print(str(func))
+    start = time.time()
+    result = func(x, y, pt)
+    end = time.time()
+    print(end - start)
+
+if __name__ == "__main__":
+    '''Run basic tests of distance functions.
+    1) Output of distance() using assigned test values
+    2) Output of ndistance(), the naive version.
+    3) Comparison of runtimes
+    '''
+    # Test values
+    x = np.arange(5)
+    y = np.arange(4)
+    pt = [-2.3, 3.3]
+   
+    # Testing output of actual function
+    print("distance(): using numpy array operations")
+    print(distance(x, y, pt))
+    print("\n")
+    
+    # testing output of naive function for comparison
+    print("ndistance(): using naive for loop approach")
+    print(ndistance(x, y, pt))
+    print("\n")
+   
+    # Compare runtimes
+    timeit(distance, x, y, pt)
+    timeit(ndistance, x, y, pt)
+
