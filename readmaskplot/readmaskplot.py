@@ -80,9 +80,10 @@ def readmaskplot(filepath):
     mdates = ma.array(dates, mask=ma.getmask(mtemps))
 
     # Print out the mean, median, and stdev
-    print("Mean temperature of this dataset:    {}".format(mtemps.mean()))
-    print("Median temperature of this dataset:  {}".format(np.median(mtemps)))
-    print("Standard deviation of this dataset:  {}".format(mtemps.std()))
+    np.set_printoptions(precision = 6)
+    print("Mean temperature of this dataset:    {:.6f}".format(mtemps.mean()))
+    print("Median temperature of this dataset:  {:.6f}".format(np.median(mtemps)))
+    print("Standard deviation of this dataset:  {:.6f}".format(mtemps.std()))
 
     # Format plot data
     plt.plot(mdates.compressed(), mtemps.compressed())
@@ -95,13 +96,15 @@ def readmaskplot(filepath):
     axisExtents.append(np.amax(mtemps.compressed() + 1.0 ))
     plt.axis(axisExtents)
 
-    # Set labels
+    # Set title/labels
+    plt.title("CSS458A - Read, Mask, Plot - Martin Metke - 2017/04/06")
     plt.xlabel('Julian Day (with seconds)')
     plt.ylabel('Temperature')
 
     # Plot / show
+    plt.gcf().set_size_inches(11.5, 8)
     # plt.show()
-    plt.savefig('readmarkplot_output.png', dpi=300)
+    plt.savefig('readmaskplot_output.png', dpi=600)
 
 if __name__ == "__main__":
     '''Run as "python readmaskplot.py [path string]"
