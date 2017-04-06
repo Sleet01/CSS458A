@@ -43,8 +43,12 @@ def readmaskplot(filepath):
     :rtype: boolean
 
     :Example:
+    >>> import readmaskplot as rmp
+    >>> In [2]: rmp.readmaskplot("./ASFG_Ts.txt")
+    Mean temperature of this dataset:    -16.530492
+    Median temperature of this dataset:  -14.959500
+    Standard deviation of this dataset:  13.620793
 
-    .. Note::
     '''
 
     # Try to open the provided file; return false if not found.
@@ -81,9 +85,9 @@ def readmaskplot(filepath):
 
     # Print out the mean, median, and stdev
     np.set_printoptions(precision = 6)
-    print("Mean temperature of this dataset:    {:.6f}".format(mtemps.mean()))
-    print("Median temperature of this dataset:  {:.6f}".format(np.median(mtemps)))
-    print("Standard deviation of this dataset:  {:.6f}".format(mtemps.std()))
+    print("Mean temperature of this dataset:    {: .6f}".format(mtemps.mean()))
+    print("Median temperature of this dataset:  {: .6f}".format(np.median(mtemps)))
+    print("Standard deviation of this dataset:  {: .6f}".format(mtemps.std()))
 
     # Format plot data
     plt.plot(mdates.compressed(), mtemps.compressed())
@@ -106,6 +110,8 @@ def readmaskplot(filepath):
     # plt.show()
     plt.savefig('readmaskplot_output.png', dpi=600)
 
+    return True
+
 if __name__ == "__main__":
     '''Run as "python readmaskplot.py [path string]"
     to process either the default file, or the file at path string'''
@@ -117,4 +123,7 @@ if __name__ == "__main__":
     else:
         datafile = "./ASFG_Ts.txt"
 
-    sys.exit(readmaskplot(datafile))
+    if readmaskplot(datafile):
+        sys.exit(0)
+    else:
+        sys.exit(1)
