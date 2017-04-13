@@ -54,7 +54,6 @@ RUNTIMEVALS = [[10, 0.093, 500], \
                [30, 0.093, 500], \
                [40, 0.093, 500]]
 
-# calcInvestmentError function
 def calcInvestmentError( simLength, rate, initAmount):
     '''calcInvestmentError determines the compound interest accrued 
     on a given amount at a given rate, and compares the SD estimate
@@ -123,7 +122,6 @@ def calcInvestmentError( simLength, rate, initAmount):
     
     return [timeList, balanceList, analyticList, absErrorList, relErrorList]
 
-# Main function (runs several passes and plots graph of balances)
 def main():
     '''Function run when this module is called as an argument to 
     python[3[.X]], or as an executable, on the command line.
