@@ -83,6 +83,11 @@ def readmaskplot(filepath):
     mtemps = ma.masked_greater(temperatures, 0.0)
     mdates = ma.array(dates, mask=ma.getmask(mtemps))
 
+    print(mtemps.mask)
+    print(mdates.mask)
+    print(mdates.mask == mtemps.mask)
+    print(True in mdates.mask)
+
     # Print out the mean, median, and stdev
     np.set_printoptions(precision = 6)
     print("Mean temperature of this dataset:    {: .6f}".format(mtemps.mean()))
@@ -90,7 +95,7 @@ def readmaskplot(filepath):
     print("Standard deviation of this dataset:  {: .6f}".format(mtemps.std()))
 
     # Format plot data
-    plt.plot(mdates.compressed(), mtemps.compressed())
+    plt.plot(mdates, mtemps)
 
     # Format extents of plot region
     axisExtents = []
