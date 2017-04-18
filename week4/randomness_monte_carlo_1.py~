@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+
+#=======================================================================
+#                        General Documentation
+
+"""CSS458 Randomness 1 Problem 1 - Martin L. Metke
+"""
+#---------------- Module General Import and Declarations ---------------
+import numpy as np
+import math
+import matplotlib.pyplot as plt
+
+
+#---------------------- General Functions: func -----------------------
+def func( x ):
+    """function used to plot curve in S&S 9.2.1
+    
+    Args:
+        x (int or float): number to operate on
+
+    Returns: 
+        y: sqrt(cos^2(x) + 1)
+    
+    """
+    return math.sqrt(math.cos(x)*math.cos(x) + 1)
+
+def simulate(darts_count, passes=100, ranges=[0.0, 2.0, 0.0, 1.5], yfunc=func):
+    '''Run one set of Monte Carlo simulations for "dartboard" that contains
+    a section of the provided yfunction (e.g. y = yfunc(x) continuously within
+    the ranges of x and y provided in ranges).
+
+    Args:
+        darts_count (int):  Number of darts to "throw" each pass
+        passes (int):       Number of simulation runs to execute
+        ranges (list):      [xmin, xmax, ymin, ymax] extents to "throw" at
+        yfunc (function):   Function of (x) to use to find y
+
+    Returns:
+        MeanAndStdDev (dict): dictionary of results 'Mean' and 'StdDev'
+
+    
+    '''
+
+    # Cast pt to ndarray to make subsequent checks simpler
+    if (type(pt) == list):
+        pt = np.array(pt)
+
+    # Check that parameters are valid
+    # Raise ValueError if not
+    if (x.ndim != 1) or (y.ndim != 1) or not \
+            (pt.size == 2 and pt.shape == (2,)):
+        raise ValueError("parameters must be (1D, 1D, (2, ))")
+    else:
+        # create a pair of grids a la Lin ch. 4.6 so that array-syntax
+        # operations work correctly
+        xy = np.meshgrid(x, y)
+
+        # xy now contains identically-sized ndarrays of x and y locations; we
+        # can perform numpy array operations on them efficiently.
+        # Calculating the cartesian distance between e.g. xy[0], xy[1]
+        # coordinates and the location of pt is now a matter of applying the
+        # Pythagorean theorem to each coordinate pair at once.
+        return np.sqrt(np.square(xy[0]-pt[0]) + np.square(xy[1]-pt[1]))
+
+if __name__ == "__main__":
+    '''Run basic tests of distance functions.
+    1) Output of distance() using assigned test values
+    2) Output of ndistance(), the naive version.
+    3) Comparison of runtimes
+    '''
+    # Test values
+    x = np.arange(5)
+    y = np.arange(4)
+    pt = [-2.3, 3.3]
+   
+    # Testing output of actual function
+    print("distance(): using numpy array operations")
+    print(distance(x, y, pt))
+    print("\n")
+    
+    # testing output of naive function for comparison
+    print("ndistance(): using naive for loop approach")
+    print(ndistance(x, y, pt))
+    print("\n")
+   
+    # Compare runtimes
+    timeit(distance, x, y, pt)
+    timeit(ndistance, x, y, pt)
+
