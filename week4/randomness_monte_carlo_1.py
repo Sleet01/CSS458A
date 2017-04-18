@@ -4,6 +4,8 @@
 #                        General Documentation
 
 """CSS458 Randomness 1 Problem 1 - Martin L. Metke
+
+    Based on S&S 9.2.2 example for estimating the area under a curve.
 """
 #---------------- Module General Import and Declarations ---------------
 import numpy as np
@@ -13,7 +15,7 @@ import matplotlib.pyplot as plt
 
 #---------------------- General Functions: func -----------------------
 def func( x ):
-    """function used to plot curve in S&S 9.2.1
+    """function used to plot curve in S&S 9.2.2
     
     Args:
         x (int or float): number to operate on
@@ -24,6 +26,7 @@ def func( x ):
     """
     return math.sqrt(math.cos(x)*math.cos(x) + 1)
 
+#-------------------- General Functions: simulate ---------------------
 def simulate(darts_count, passes=100, ranges=[0.0, 2.0, 0.0, 1.5], yfunc=func):
     '''Run one set of Monte Carlo simulations for "dartboard" that contains
     a section of the provided yfunction (e.g. y = yfunc(x) continuously within
@@ -73,7 +76,13 @@ def simulate(darts_count, passes=100, ranges=[0.0, 2.0, 0.0, 1.5], yfunc=func):
             'StdDev': np.std(areas)}
 
 
+#---------------------- General Functions: main -----------------------
 def main():
+    """ Runs sets of simulations at various accuracies (numbers of random
+    "darts) and computes the error (std. dev.) of the estimate based on the
+    results.
+    """
+
     darts_set = np.array([10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000])
     est_areas = []
     est_std = []
@@ -92,7 +101,12 @@ def main():
         est_areas.append(retval['Mean'])
         est_std.append(retval['StdDev'])
 
-    # plt.plot(darts_set, np.array(est_std))
+    plt.plot(darts_set, np.array(est_std))
+    plt.xlabel("Number of 'darts'")
+    plt.ylabel("Error (Std. Dev.)")
+    plt.title( "Std Dev as function of random coordinates in Monte Carlo sim" )
+
+    plt.show()
 
     return 0
 

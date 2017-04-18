@@ -139,8 +139,8 @@ def main():
     plt.plot(resultsList[-1][0], resultsList[-1][2], 'r--', label='Analytical')
     plt.axis([resultsList[-1][0][0], resultsList[-1][0][-1], \
              0, resultsList[-1][2][-1] + 1000 ])
-    plt.xlabel = "Time (Yrs)"
-    plt.ylabel = "Balance ($)"
+    plt.xlabel( "Time (Yrs)" )
+    plt.ylabel = ( "Balance ($)" )
     plt.legend()
     plt.title( \
         "Comparison of SD to Analytical Calculation of Compound Interest")
