@@ -21,7 +21,7 @@ sys.setrecursionlimit(2000)
 XMIN = 0
 XMAX = 0.25
 XRES = 100
-RANDCOUNT = 1000
+RANDCOUNT = 5000
 FBOUND = 2 * math.pi
 
 #---------------------- General Functions: func -----------------------
@@ -39,6 +39,9 @@ def rej(randVals = None, yfunc = func):
         randVals (maskedarray): Masked ndarray (for recursion)
         yfunc (function):       Function to use as rejection check
     """
+    # Bound numbers to compare against
+    randBound = np.random.uniform(0, FBOUND, RANDCOUNT)
+
     # If this is the first pass, instantiate randVals as RANDCOUNT random
     # values in the range of [XMIN, XMAX) and convert to a masked array
     if randVals is None:
@@ -50,11 +53,10 @@ def rej(randVals = None, yfunc = func):
     else:
         # Apply the yfunc to all unmasked (bad) values to retry generating
         # values of f(x) > [0, FBOUND)
-        ma.apply_along_axis(lambda x: random.uniform(XMIN, XMAX), 0, randVals)
-
-        
-    # Bound numbers to compare against
-    randBound = np.random.uniform(0, FBOUND, RANDCOUNT)
+        # ma.apply_along_axis(lambda x: random.uniform(XMIN, XMAX), 0, randVals)
+        badSize = len(randVals[func(randVals) <= randBound])
+        randVals[func(randVals) <= randBound] = \
+                np.random.uniform(XMIN, XMAX, badSize )
     
     # Apply masking to protect valid values
     randVals = ma.masked_where(func(randVals) > randBound, randVals)
@@ -93,7 +95,7 @@ def main():
 
     # Plot a histogram of the x values which were returned
     ax2 = ax1.twinx()
-    ax2.hist(results, bins=XRES, normed=True, facecolor='red', alpha=0.75)
+    ax2.hist(results, bins=XRES, normed=False, facecolor='red', alpha=0.75)
     ax2.set_ylabel("Count")
     ax2.tick_params('y', colors='r')
 
