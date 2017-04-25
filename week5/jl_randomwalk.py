@@ -56,23 +56,8 @@ def sawRandomWalkPoints():
         else:
             break
 
+    # Turns the array of coordinates into 2 x 1d arrays of x or y values
     return N.hsplit(output_list_xy, 2)
-
-
-def randomWalkPoints(n):
-    output_list_x = N.zeros((n,), dtype='l')
-    output_list_y = N.zeros((n,), dtype='l')
-
-    rand = N.random.randint(2, size=(n-1,))
-    output_list_x[1:] = N.where(rand == 0, 1, -1)[:]
-    output_list_x = N.cumsum(output_list_x)
-
-    rand = N.random.randint(2, size=(n-1,))
-    output_list_y[1:] = N.where(rand == 0, 1, -1)[:]
-    output_list_y = N.cumsum(output_list_y)
-
-    return (output_list_x, output_list_y)
-
 
 def animateWalk(x_points, y_points):
     plt.ion()    #- Turn interative mode on
@@ -89,31 +74,83 @@ def animateWalk(x_points, y_points):
         plt.draw()
         plt.pause(0.5)
 
+    plt.ioff()
+
 
 def randomWalkDistance(x_points, y_points):
     return N.sqrt(x_points[-1]**2 + y_points[-1]**2)
 
 
+def sawMeanRandomWalkDist(tests):
+    
+    sumDist = 0.0
+
+    for i in range(len(tests)):
+        sumDist = sumDist + randomWalkDistance(tests[0], tests[1])
+
+    return float(sumDist) / len(tests)
+
+def sawCountStepFractions(tests):
+    
+    # Accumulate all sizes of "polymer" found in the simulation
+    # in a dictionary, which we will return
+    counts = {}
+    
+    # Traverse the set of test results
+    for i in range(len(tests)):
+        # Find how long the current test's polymer was, in steps
+        size = len(tests[i][0])
+        
+        # Either increment the count of polymers of the current size
+        try:
+            counts[size] = counts[size] + 1
+        # or, if this is the first, set it to 1
+        except KeyError as e:
+            counts[size] = 1
+
+    return counts
+
+def sawGetLongest(tests, longestSize):
+
+    # Find the first test run dataset that is as long as the
+    # longest run found (makes for more interesting plot)
+    for test in tests:
+        if len(test[0]) == longestSize:
+            return test
+
+
 def meanRandomWalkDistance(n, numTests):
     sumDist = 0.0
     for i in range(numTests):
-        xpts, ypts = randomWalkPoints(n)
+        xpts, ypts = sawRandomWalkPoints()
         sumDist = sumDist + randomWalkDistance(xpts, ypts)
     return float(sumDist) / numTests
 
+
 def main():
-    # xpts, ypts = randomWalkPoints(35)   #- Test the randomWalkPoints method
-    xpts, ypts = sawRandomWalkPoints()   #- Test the randomWalkPoints method
+    # Generate N_TESTS SAW random walks
+    runs = []
+    for i in range(N_STEPS):
+        runs.append(sawRandomWalkPoints())
+    
+    # Collect information on how many runs hit which lengths
+    dict1 = sawCountStepFractions(runs)
+    sizes = sorted(dict1.keys())
+    counts = sorted(dict1, key=dict1.get)
+    print("Step frequencies: ", sizes, counts)
+
+    plt.plot(sizes, counts)
+    plt.show()
+
+    # Run a self-avoiding walk Random Walk animation - 
+    # no guarantees of length
+    xpts, ypts = sawGetLongest(runs, sizes[-1]) #- Test the randomWalkPoints method
     animateWalk(xpts, ypts)            #  using animation
 
     mean_dist = N.zeros((N_STEPS,), dtype='d')
     for i in range(1,N_STEPS):
         mean_dist[i] = meanRandomWalkDistance(i, N_TESTS)
         print("Mean distance: " + str(mean_dist[i]))
-
-    plt.figure(2)
-    plt.plot(N.arange(N_STEPS), mean_dist, 'o')
-    plt.show()
 
 if __name__ == "__main__":
     main()
