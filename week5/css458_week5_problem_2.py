@@ -75,11 +75,13 @@ def runSimulation(casP, mallFactor):
     # Return three arrays of values
     return (coreCustomers, casualCustomers, totalCustomers)
 
-def main():
+def main(casP=0.002, factor=1.0):
     '''Simulate the number of customers to visit a record shop based on some
     approximations of probabilities, binomial / Bernoulli Trials.'''
 
-    coreCustomers, casualCustomers, totalCustomers = runSimulation(0.002, 1.0)
+    # Run simulation once
+    coreCustomers, casualCustomers, totalCustomers = runSimulation(casP,factor)
+    
     # Print table 4.18
     print("\n")
     print("================================================================================")
