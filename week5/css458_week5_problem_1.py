@@ -17,7 +17,7 @@
 
 
 #========================== USER ADJUSTABLE (begin) ==========================
-N_TESTS = 100 #- number random walk tests
+N_TESTS = 10000 #- number random walk tests
 N_STEPS = 50  #- max. number of random walk steps to see how mean distance
               #  behaves
 #=========================== USER ADJUSTABLE (end) ===========================
@@ -91,7 +91,7 @@ def animateWalk(x_points, y_points):
             plt.show()
         else:
             plt.draw()
-            plt.pause(0.5)
+            plt.pause(0.1)
 
 
 def sawMeanRandomWalkDist(tests):
@@ -163,7 +163,8 @@ def rmsDisplacements(tests, sizelist):
             
             # If we find a test run that matches the size we're assessing,
             # increase the count for that size by 1, and 
-            if len(test[0]) == size + 1:
+            # if len(test[0]) == size + 1:
+            if len(test[0]) >= size + 1:
 
                 count = count + 1
                 curSquares = curSquares + (test[0][-1]**2) + (test[1][-1]**2)
@@ -176,7 +177,7 @@ def rmsDisplacements(tests, sizelist):
 def main():
     # Generate N_TESTS SAW random walks
     runs = []
-    for i in range(N_STEPS):
+    for i in range(N_TESTS):
         runs.append(sawRandomWalkPoints())
     
     # Collect information on how many runs hit which lengths
