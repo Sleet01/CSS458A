@@ -16,6 +16,7 @@
 #
 
 import numpy as np
+from matplotlib import pyplot as plt
 from graphics import *
 from random import random
 
@@ -69,20 +70,21 @@ def main():
 
         # For each run in 10 runs:
         for j in range(len(datasets[i])):
-            displayMat(datasets[i][j][-1])
-            print()
+            # displayMat(datasets[i][j][-1])
+            # print()
 
             # Get the last grid
             gridNDA = np.array(datasets[i][j][-1])
-            print(gridNDA)
+            # print(gridNDA)
 
             # Count the number of burned squares
-            gridBurned = np.sum(np.where(gridNDA != 1))
+            gridBurned = np.where(gridNDA != 1, 1, 0).sum()
             print( gridBurned )
             
             # Figure the amount burned for this run
-            burned.append(gridBurned / (n * n)) 
+            burned.append(gridBurned / ((n -2) ** 2)) 
         
+        print ("Burned [", i,"]: ", burned)
         averages.append(np.mean(burned))
 
     print("Averages : ", averages)
@@ -94,9 +96,11 @@ def main():
     #            displayMat(grid)
     #            print()
 
-    showGraphs(datasets[0][0])
-    showGraphs(datasets[-1][-1])
+    # showGraphs(datasets[0][0])
+    # showGraphs(datasets[-1][-1])
 
+    plt.plot(burnProbs, averages)
+    plt.show()
 
 
 # Function to return forest of all trees with one burning
