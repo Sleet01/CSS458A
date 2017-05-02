@@ -15,6 +15,7 @@
 # Next value based on site and nearest neighbors (N, E, S, W) 
 #
 
+import numpy as np
 from graphics import *
 from random import random
 
@@ -27,24 +28,74 @@ WIN_SIZE = 300
     
 def main():
     t = 5  # number of time steps
-    n = 20  # size of forest
-    
-    forest = initForest(n)
+    n = 19  # size of side of total matrix, including borders
 
-    grids = []
-    grids.append(forest)
-    
-    for i in range(t):
-        forestExtended = extendLat(forest)
-        forest = applyExtended(forestExtended)
-        grids.append(forest)
-    
-#    print "After generation"
-#    for grid in grids:
-#        displayMat(grid)
-#        print
+    burnProbs = [.1, .2, .3, .4, .5, .6, .7, .8, .9]
+    datasets = []
 
-    showGraphs(grids)
+    # Perform a series of runs for each probability of 10%, 20%...90%
+    for j in range(len(burnProbs)):
+       
+        # Store each set of runs in a "dataset" that contains 10 runs of 5
+        runs = []
+
+        # Make 10 runs at the current burnProbability
+        for k in range(10):
+    
+
+            grids = []
+
+            forest = initForest(n)
+
+            grids.append(forest)
+            
+            for i in range(t):
+                forestExtended = extendLat(forest)
+                forest = applyExtended(forestExtended, burnProbs[j])
+                grids.append(forest)
+
+            runs.append(grids)
+
+        datasets.append(runs)
+        
+    # Do analysis here
+    # Determine average percent burned for each burnProbability
+    averages = []
+    
+    # For each dataset of 10 runs:
+    for i in range(len(burnProbs)):
+        
+        burned = []
+
+        # For each run in 10 runs:
+        for j in range(len(datasets[i])):
+            displayMat(datasets[i][j][-1])
+            print()
+
+            # Get the last grid
+            gridNDA = np.array(datasets[i][j][-1])
+            print(gridNDA)
+
+            # Count the number of burned squares
+            gridBurned = np.sum(np.where(gridNDA != 1))
+            print( gridBurned )
+            
+            # Figure the amount burned for this run
+            burned.append(gridBurned / (n * n)) 
+        
+        averages.append(np.mean(burned))
+
+    print("Averages : ", averages)
+
+    #print ("After generation")
+    #for dataset in datasets:
+    #    for run in dataset:
+    #        for grid in run:
+    #            displayMat(grid)
+    #            print()
+
+    showGraphs(datasets[0][0])
+    showGraphs(datasets[-1][-1])
 
 
 
@@ -52,9 +103,9 @@ def main():
 # tree in the middle.  Forest is surrounded by ground.
 
 def initForest(n):
-    probTree =  0.5    # probability of grid site occupied by tree
+    probTree =  1    # probability of grid site occupied by tree
                        # (value 1); i.e., tree density
-    probBurning = 0.5  # probability that a tree is burning (value 2);
+    probBurning = 0.0  # probability that a tree is burning (value 2);
                        # i.e., fraction of burning trees
 
     forest = [[] for i in range(n)]
@@ -68,6 +119,9 @@ def initForest(n):
                     forest[i].append(TREE)
             else:
                 forest[i].append(EMPTY)    
+
+    # For S&S 10.3.9: Set the center tree on fire 
+    forest[9][9] = (BURNING)
 
     return forest
 
@@ -95,7 +149,7 @@ def displayMat(mat):
 
 # Function to apply spread function
 
-def applyExtended(mat):
+def applyExtended(mat, burnProb):
     copy = copyInsideMat(mat)
     n = len(copy)
     for i in range(1, n + 1):
@@ -105,7 +159,7 @@ def applyExtended(mat):
             E = mat[i][j + 1]
             S = mat[i + 1][j]
             W = mat[i][j - 1]
-            copy[i - 1][j - 1] = spread(site, N, E, S, W) 
+            copy[i - 1][j - 1] = spread(site, N, E, S, W, burnProb) 
     return copy
 
 
@@ -128,19 +182,13 @@ def copyInsideMat(mat):
 #   Perhaps next time step tree with burning neighbor(s) burns itself.
 #   Perhaps tree is hit by lightning and burns next time step.
 
-def spread(site, N, E, S, W):
-    probImmune = 0.5     # probability of immunity from catching fire - global variable
-    probLightning = 0.01  # probability of lightning - global variable
+def spread(site, N, E, S, W, burnProb = 0.1):
+    burnProbability = burnProb     # probability of catching fire - global variable
     if (site == EMPTY) or (site == BURNING):
         returnValue = EMPTY
     elif (site == TREE) and ((N == BURNING) or (E == BURNING) or
                              (S == BURNING) or (W == BURNING)):
-        if random() < probImmune:
-            returnValue = TREE
-        else:
-            returnValue = BURNING
-    elif (site == TREE):
-        if (random() < probLightning*(1 - probImmune)):
+        if random() < burnProbability:
             returnValue = BURNING
         else:
             returnValue = TREE
