@@ -1,8 +1,17 @@
+#!/usr/bin/env python3
+
 # Fire.py
 #
-# Simulation of fire spread by generating a list of grids simulating
-# fire spreading, the total burned, and the percentage burned
+# Author: Martin Metke
+# Date: 2017/05/02
+# For:  CSS458A Week 6 Problem2
 #
+# Evaluation of burn ratio for 17-by-17 forest of trees with various ignition
+# probabilities from 10% to 90%, over 5 time steps.
+#
+# Updated to Python3 compatibility via 2to3 script (from Python 3.6)
+#
+# Adapted from:
 # Introduction to Computational Science:  Modeling and Simulation for the Sciences
 # Angela B. Shiflet and George W. Shiflet
 # Wofford College
@@ -17,7 +26,7 @@
 
 import numpy as np
 from matplotlib import pyplot as plt
-from graphics import *
+# from graphics import * # graphics uses bad tkinter threading, breaks pyplot
 from random import random
 
 EMPTY = 0
@@ -79,15 +88,16 @@ def main():
 
             # Count the number of burned squares
             gridBurned = np.where(gridNDA != 1, 1, 0).sum()
-            print( gridBurned )
+            # print( gridBurned )
             
             # Figure the amount burned for this run
             burned.append(gridBurned / ((n -2) ** 2)) 
         
-        print ("Burned [", i,"]: ", burned)
+        # print ("Burned [", i,"]: ", burned)
         averages.append(np.mean(burned))
 
-    print("Averages : ", averages)
+    print("Average burn percentage for each burnProbability :\n", \
+            np.multiply(averages, 100))
 
     #print ("After generation")
     #for dataset in datasets:
@@ -99,7 +109,16 @@ def main():
     # showGraphs(datasets[0][0])
     # showGraphs(datasets[-1][-1])
 
-    plt.plot(burnProbs, averages)
+    # Use np.polyfit to fit a quadratic to the stochastic points
+    c = np.polyfit(np.multiply(burnProbs, 100), np.multiply(averages, 100), 2)
+
+    plt.plot(np.multiply(burnProbs, 100), np.multiply(averages, 100),
+    label='C.A. Method')
+    plt.plot(np.multiply(burnProbs, 100), np.polyval(c, np.multiply(burnProbs,
+        100)), label = 'Quadratic fit')
+    plt.xlabel( "Global Burn Probability (%)" )
+    plt.ylabel( "Average Burned Trees in 5 steps (%)" )
+    plt.legend()
     plt.show()
 
 
