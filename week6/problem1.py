@@ -26,8 +26,12 @@ AMBIENT = 25.0
 HOT = 50.0
 #=========================== USER ADJUSTABLE (end) ===========================
 
-
 def diffusion(diffusionRate, site, N, NE, E, SE, S, SW, W, NW):
+    """Default diffusion function"""
+
+    return(1-8*diffusionRate)*site + diffusionRate*(N + NE + E +  SE + S + SW + W + NW)
+
+def diffusionSto(diffusionRate, site, N, NE, E, SE, S, SW, W, NW):
     """Apply diffusion of heat rate from Moore neighborhood to the
     site passed in, using a stochastic method: random normally-
     distributed numbers centered at 0.0 with STDDEV 0.5.
@@ -68,8 +72,18 @@ def initBar(m, n, hotSites, coldSites):
     return applyHotCold(ambientBar, hotSites, coldSites)
 
 def applyHotCold(bar, hotSites, coldSites):
-    " Function to accept a grid of temperatures and to return a grid with heat
-    and cold applied at hotSites and coldSites, respectively"""
+    """ Function to accept a grid of temperatures and to return a grid with heat
+    and cold applied at hotSites and coldSites, respectively.
+    
+    Args:
+        bar (matrix):           Matrix of temperatures
+        hotSites (list):        List of coordinates of "HOT" cells
+        coldSites (list):       List of coordinates of "COLD" cells
+
+    Returns:
+        bar (matrix):           Matrix of temps, now + hot and cold cells
+        
+    """
 
     newBar = np.copy(bar)
 
@@ -85,3 +99,5 @@ if __name__ == "__main__":
 
     print("Test diffusion value: ", \
             diffusion(0.1, 10, 5, 7, 7, 8, 9, 10, 8, 6))
+    print("Test stochastic diffusion value: ", \
+            diffusionSto(0.1, 10, 5, 7, 7, 8, 9, 10, 8, 6))
