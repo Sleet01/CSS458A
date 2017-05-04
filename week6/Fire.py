@@ -8,6 +8,13 @@
 #
 # Evaluation of burn ratio for 17-by-17 forest of trees with various ignition
 # probabilities from 10% to 90%, over 5 time steps.
+# 
+# Discussion: The percentage burned over the course of 5 turns seems to
+# increase exponentially as a function of the burn probability.  In fact,
+# doubling 't' to 10 time steps seems to increase the steepness of the curve.
+# Doubling 't' again to 20 time steps, however, shows a marked drop-off around
+# 70% burn probability, as this and all higher values approach or reach 100%
+# burn rate in that time.
 #
 # Updated to Python3 compatibility via 2to3 script (from Python 3.6)
 #
@@ -82,8 +89,9 @@ def main():
             # displayMat(datasets[i][j][-1])
             # print()
 
-            # Get the last grid
-            gridNDA = np.array(datasets[i][j][-1])
+            # Get the last grid, sans border
+            gridNDA = np.array(datasets[i][j][-1])[1:-1,1:-1]
+            print(gridNDA.size)
             # print(gridNDA)
 
             # Count the number of burned squares
