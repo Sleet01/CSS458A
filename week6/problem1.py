@@ -35,4 +35,6 @@ def diffusion(diffusionRate, site, N, NE, E, SE, S, SW, W, NW):
     # Finalize coefficient generation
     coeffs = (rndi + 1)*diffusionRate
 
+    # Multiply the site value by 1-8*r, then add stochasticly modified
+    # neighboring sites' values.
     return(1-8*diffusionRate)*site + np.sum(coeffs*neighVals)
