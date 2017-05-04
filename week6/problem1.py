@@ -15,6 +15,7 @@
 #============================= IMPORTS =======================================
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import time
 #============================= END IMPORTS ===================================
 
@@ -161,13 +162,13 @@ def diffusionSim(m, n, diffusionRate, t, diffFunc = diffusion):
     hotSites = [[m/4, 0], [(m/4)+1, 0], [(m/4)+2, 0], [0, n*(3/4)]]
     
     bar = initBar(m, n, hotSites, coldSites)
-    grids = [bar]
+    grids = np.array([bar], dtype='l')
 
     for step in range(t):
         barExtended = reflectingLat(bar)
         bar = applyDiffusionExtended( barExtended, diffusionRate,diffFunc)
         bar = applyHotCold(bar, hotSites, coldSites)
-        grids.append(bar)
+        grids = np.append(grids, np.array([bar]), axis=0)
 
     return grids
 
@@ -182,22 +183,52 @@ if __name__ == "__main__":
     and one that shows the temperature at the same moment in time for the
     non-stochastic model."""
 
+    # Number of steps to simulate
+    steps = 20
+
+    # Number of simulation runs
+    runs = 10
+
     # Cell we wish to keep track of [row, col]:
-    cell = [5, 2]
+    cell = [5, 14]
     
     # Heat states of the cell above, over 100 simulations
     stoHeats = []
     
-    # Run simulation 100 times and record the end heat states
-    for i in range(100):
+    # Run simulation 100 times and record the end heat states for cell
+    for i in range(runs):
 
-        stoHeats.append(diffusionSim(10, 28, 0.1, 20, diffusionSto))
+        # Grab all temperatures across the simulation for desired cell, for
+        # plotting later.
+        stoHeats.append(diffusionSim(10, 28, 0.1, steps, diffusionSto)[:, cell[0], cell[1]])
 
     sims = np.array(stoHeats)
-    print(sims.shape)
+
+    print("Mean end temp for cell, ranges: ", np.mean(sims[:,-1]), 
+            (np.amin(sims[:,-1]), np.amax(sims[:,-1])))
+
+    means = np.mean(sims, axis=0)
+
+    # Record a non-stochastic heat simulation for the same cell
+    diffHeats = diffusionSim(10, 28, 0.1, steps)[:, cell[0], cell[1]]
+    
+    # For plotting, include 0th time step + 1st through 'step'th
+    times = np.arange(steps+1)
+
+    # Plot the two temp ranges over time
+    fig, ax = plt.subplots()
+
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.set_xlim([0, steps])
+    plt.plot(times, means, label='Stochastic mean')
+    plt.plot(times, diffHeats, label='Default diffusion')
+    plt.xlabel( "Time steps" )
+    plt.ylabel( "Temperature (c)" )
+    plt.legend()
+    plt.show()
 
     # output = sims[-1]
     # plt.matshow(output[-1], cmap=plt.get_cmap('jet'))
     # plt.matshow(output[-1], cmap=plt.get_cmap('seismic'))
     # plt.colorbar()
-    plt.show()
+    # plt.show()
