@@ -227,8 +227,8 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
 
-    # output = sims[-1]
-    # plt.matshow(output[-1], cmap=plt.get_cmap('jet'))
+    output = diffusionSim(10, 28, 0.1, steps, diffusionSto)
+    plt.matshow(output[-1], cmap=plt.get_cmap('jet'))
     # plt.matshow(output[-1], cmap=plt.get_cmap('seismic'))
-    # plt.colorbar()
-    # plt.show()
+    plt.colorbar()
+    plt.show()

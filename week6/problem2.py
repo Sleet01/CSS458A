@@ -97,7 +97,7 @@ def main():
 
             # Get the last grid, sans border
             gridNDA = np.array(datasets[i][j][-1])[1:-1,1:-1]
-            print(gridNDA.size)
+            # print(gridNDA.size)
             # print(gridNDA)
 
             # Count the number of burned squares
@@ -126,6 +126,7 @@ def main():
     # Use np.polyfit to fit a quadratic to the stochastic points
     c = np.polyfit(np.multiply(burnProbs, 100), np.multiply(averages, 100), 2)
 
+    # Configure plot and show
     plt.plot(np.multiply(burnProbs, 100), np.multiply(averages, 100),
     label='C.A. Method')
     plt.plot(np.multiply(burnProbs, 100), np.polyval(c, np.multiply(burnProbs,
