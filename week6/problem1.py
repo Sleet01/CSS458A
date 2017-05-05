@@ -14,6 +14,7 @@
 
 #============================= IMPORTS =======================================
 import numpy as np
+import matplotlib.animation as animation
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import time
@@ -227,8 +228,24 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
 
+    # From Stack Overflow question:
+    # http://stackoverflow.com/questions/17853680/animation-using-matplotlib-with-subplots-and-artistanimation
+    fig = plt.figure()
+    ax1 = fig.add_subplot(1,1,1)
+    ims = []
+
     output = diffusionSim(10, 28, 0.1, steps, diffusionSto)
-    plt.matshow(output[-1], cmap=plt.get_cmap('jet'))
-    # plt.matshow(output[-1], cmap=plt.get_cmap('seismic'))
-    plt.colorbar()
+
+    for time in range(output.shape[0]):
+        im = ax1.matshow(output[time], cmap=plt.get_cmap('jet'))
+        ims.append([im,])     
+
+    #run animation
+    ani = animation.ArtistAnimation(fig,ims, interval=100,blit=True)
+    #plt.colorbar()
     plt.show()
+
+    # plt.matshow(output[-1], cmap=plt.get_cmap('jet'))
+    # plt.matshow(output[-1], cmap=plt.get_cmap('seismic'))
+    # plt.colorbar()
+    # plt.show()
