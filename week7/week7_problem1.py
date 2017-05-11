@@ -42,6 +42,14 @@ UNOCCUPIED_VALUE        = 0.0   # Value to set index 2 of unoccupied cells
 WATER_HOPPING           = 0.002 # Amount of water toad uses up when hopping
 WOULD_LIKE_DRINK        = 0.9   # Internal water level below which toad drinks
 WOULD_LIKE_EAT          = 0.9   # Internal water level below which toad eats
+MOVE_OFFSET             = { 0: [-1, 0], \
+                            1: [-1, 1], \
+                            2: [ 0, 1], \
+                            3: [ 1, 1], \
+                            4: [ 1, 0], \
+                            5: [ 1,-1], \
+                            6: [ 0,-1], \
+                            7: [-1,-1]} # Translates cardinal to displacement
 
 #=========================== USER ADJUSTABLE (end) ===========================
 
@@ -193,7 +201,6 @@ class Field:
         grid[:,:,0] = [2],[2], [0]
 
         # Insert grid into larger bgrid, leaving borders intact
-        #bgrid[:,1:-1,1:-1] = grid
         
         return grid
 
@@ -216,9 +223,9 @@ class Field:
 
         # Now create fenced AWP kernel by setting the "occupied" value
         # so that toads cannot move into the AWP location, even though they
-        # can still sense it.
+        # can still sense it.  Only the center is blocked.
         fkernel = np.copy(kernel)
-        fkernel[2,:,:] = OCCUPIED_VALUE
+        fkernel[2,2,2] = OCCUPIED_VALUE
 
         # AWPs cannot be created within 2 cells of the edges or another
         # AWP.
@@ -355,12 +362,230 @@ class Toad:
 
     def consume(self):
         '''Method by which Toads consume resources from the grid'''
-        pass
+        
+        x, y = self.pos
+        field = self.field
+
+        # First, deal with food (energy)
+        if(self.energy < WOULD_LIKE_EAT):
+
+            # Amount the toad can eat is the smallest of AMT_EAT,
+            # the difference between "full" (1) and its current energy,
+            # or the total amount of food available at its grid location
+            amtEat = np.amin([AMT_EAT, 1-self.energy, field.grid[0,y,x]])
+            
+            # Account for starting position, which has -1 food
+            if amtEat <= -1:
+                amtEat = 0
+
+            # Add amtEat to self.energy, and subtract from current grid loc.
+            # This amount may be zero
+            self.energy += amtEat
+            self.field.grid[0,y,x] -= amtEat
+
+            # Calculate how much water was in the food and add to water stores
+            # Water cannot exceed 1.0
+            self.water += np.amin([1-self.water, (amtEat * FRACTION_WATER)])
+
+        # Next, water (exactly like food, but does not decrease resource)
+        if(self.water < WOULD_LIKE_DRINK):
+
+            amtDrink = np.amin([AMT_DRINK, 1-self.water, field.grid[1,y,x]])
+
+            if amtDrink <= -1:
+                amtDrink = 0
+
+            self.water += amtDrink
+
+
+        if self.energy > 1.0:
+            self.energy = 1.0
+
+        if self.water > 1.0:
+            self.water = 1.0
 
 
     def move(self):
         '''Method by which Toad determines whether to move and, if so, where to
         move to.'''
+
+        x, y = self.pos
+        field = self.field
+        surrounds = self.senseSurroundings()
+        target = -1
+
+        # Check if thirsty
+        if self.water < WOULD_LIKE_DRINK:
+            target = self.thirsty(surrounds)
+            print("MOVE: Thirsty frog chose dir", target)
+
+        # Otherwise, check if hungry
+        elif self.energy < WOULD_LIKE_EAT:
+            target = self.hungry(surrounds)
+            print("MOVE: Thirsty frog chose dir", target)
+
+        elif np.random.rand() < MAY_HOP:
+            target = self.hopForFun()
+            print("MOVE: Bored frog chose dir", target)
+
+        # See which target was chosen
+        if target == -1:
+            self.stay()
+        else:
+            # See which actual grid cell was chosen
+            ty, tx = np.add([y, x], MOVE_OFFSET[target])
+
+            # Make sure the grid is unoccupied and valid
+            if (field.grid[ 2, ty, tx] >= 0 and \
+                field.grid[ 1, ty, tx] > -1 and \
+                field.grid[ 0, ty, tx] > -1):
+                self.hop(tx, ty)
+            else:
+                self.stay()
+
+                
+    def hop(self, newx, newy):
+        '''Actually transfer this Toad's position to another grid cell.
+
+        Pre:                Must have verified that cell is currently empty
+        Args:
+            newx (int):     X index (column / 3rd index) of new cell
+            newy (int):     y index (row / 2nd index) of new cell
+
+        '''
+        
+        x, y = self.pos
+        grid = self.field.grid
+
+        # Set current grid to unoccupied
+        grid[2,y,x] = UNOCCUPIED_VALUE
+
+        # Set new grid to occupied
+        grid[2,newy,newx] = OCCUPIED_VALUE
+        
+        # Update my position
+        self.pos = [newx, newy]
+
+        # Update energy and water stores
+        self.energy -= ENERGY_HOPPING
+        self.water -= WATER_HOPPING
+
+        print("HOP: frog", self, "hopped from (%i, %i)" % (x, y),
+                "to (%i, %i)" % (newx, newy))
+
+    def hopForFun(self):
+        '''Choose a random direction in which to hop.  But if on a border,
+        hop west'''
+        x, y = self.pos
+        field = self.field
+        cellWater = field.grid[1,y,x]
+        target = -1
+
+        # If we're on a border cell and there's an opening to the west, go west
+        if (cellWater <= -1.0) and field.grid[2,y,x] < OCCUPIED_VALUE:
+            target = 6
+        # But if we're on a border cell and can't go west, stay here.    
+        elif (cellWater <= -1.0):
+            pass
+        # Otherwise, choose a direction to hop to.  
+        else:
+            # Randomly choose one index from the offset table
+            target = np.random.choice(np.arange(len(MOVE_OFFSET), dtype='i'))
+
+        return target
+    
+        
+    def hungry(self, surroundings):
+        '''When a Toad is hungry, it chooses a target cell to move to based on
+        a hierarchy of needs.
+            1) Desire to find more moisture (water > 0 in neighboring cell)
+            2) Desire to leave border cell (water = -1)
+            3) Desire to conserve water while waiting to leave border cell
+
+        Args:
+            surroundings (ndarray):     List of surrounding cells
+
+        Returns:
+            target      (index):        Index of cell to go to
+        '''
+        x, y = self.pos
+        field = self.field
+        target = -1
+        cellFood = field.grid[0,y,x]
+        maxFood = np.amax(surroundings[:][0])
+
+        # If the current cell has as much food as the next-highest, don't move
+        if cellFood >= maxFood:
+            pass
+
+        # If we're on a border cell and there's an opening to the west, go west
+        elif (cellFood <= -1.0) and field.grid[2,y,x] < OCCUPIED_VALUE:
+            target = 6
+
+        # Otherwise, if there is a nearby cell with 
+        elif (cellFood <= 0.0) and (cellFood > -1.0):
+
+            # Find the index/indices of highest nearby food value(s)
+            whereMax = np.where(surroundings[:][0] == np.amax(surroundings[:][0]))
+
+            # Choose one at random if more than one
+            target = np.random.choice(whereMax[0])
+        
+        else:
+            pass
+
+        return target
+
+
+    def thirsty(self, surroundings):
+        '''When a Toad is thirsty, it chooses a target cell to move to based on
+        a hierarchy of needs.
+            1) Desire to stay on an AWP (water == 1)
+            2) Desire to find more moisture (water > 0 in neighboring cell)
+            3) Desire to leave border cell (water = -1)
+            4) Desire to conserve water while waiting to leave border cell
+
+        Args:
+            surroundings (ndarray):     List of surrounding cells
+
+        Returns:
+            target      (index):        Index of cell to go to
+        '''
+        x, y = self.pos
+        field = self.field
+        target = -1
+        cellWater = field.grid[1,y,x]
+        print("THIRSTY: frog at grid (%i, %i) found %i water" % (x, y,
+            cellWater))
+
+        # If Toad is on an AWP, it won't move due to water needs (at least)
+        if cellWater >= 0.999999999:
+            pass
+       
+        # If we're not on an edge or an AWP/adjacent/2adjacent, move to local
+        # max water value
+        elif (cellWater <= 0.0 and cellWater > -1.0):
+            # Find the index/indices of highest nearby water value(s)
+            whereMax = np.where(surroundings[:][1] == np.amax(surroundings[:][1]))
+            #print("THIRSTY: Local water values are:", surroundings)
+            print("THIRSTY: local max water is:", whereMax)
+
+            # Choose one at random if more than one
+            target = np.random.choice(whereMax[0])
+        
+        # If we're on a border cell and there's an opening to the west, go west
+        elif (cellWater <= -1.0) and field.grid[2,y,x-1] < OCCUPIED_VALUE:
+            target = 6
+            print("THIRSTY: frog at grid (%i, %i) chose dir 6" % (x, y))
+
+        else:
+            print("THIRSTY: frog at grid (%i, %i) chose death" % (x, y))
+            pass
+
+        return target
+
+
+    def stay(self):
 
         self.energy = self.energy - ENERGY_HOPPING / 2.0
         self.water = self.water - WATER_HOPPING / 2.0
@@ -387,15 +612,20 @@ class Toad:
         and selecting the N, E, S, and W chunks only.
         '''
         x, y = self.pos
-        adjs = self.field.grid[y-1:y+2, x-1:x+2]
-        if(adjs.size == 27):
-            # Returns sensed values in N, NE, E, SE, S, SW, W, NW order
-            return (adjs[:,0,1], adjs[:,0,2], adjs[:,1,2], adjs[:,2,2],
-                    adjs[:,2,1], adjs[:,2,0], adjs[:,1,0], adjs[:,0,0])
-        else: #Should only happen while on the "start" border.
-            # Duplicate current column's values to NE,E,SE readings
-            return (adjs[:,0,1], adjs[:,0,1], adjs[:,1,1],adjs[:,2,1],
-                    adjs[:,2,1], adjs[:,2,0], adjs[:,1,0],adjs[:,0,0])
+        adjs = self.field.grid[:,y-1:y+2, x-1:x+2]
+        try:
+            if(adjs.size == 27):
+                # Returns sensed values in N, NE, E, SE, S, SW, W, NW order
+                return (adjs[:,0,1], adjs[:,0,2], adjs[:,1,2], adjs[:,2,2],
+                        adjs[:,2,1], adjs[:,2,0], adjs[:,1,0], adjs[:,0,0])
+            else: #Should only happen while on the "start" border.
+                # Duplicate current column's values to NE,E,SE readings
+                return (adjs[:,0,1], adjs[:,0,1], adjs[:,1,1],adjs[:,2,1],
+                        adjs[:,2,1], adjs[:,2,0], adjs[:,1,0],adjs[:,0,0])
+        except IndexError as e:
+            print("SENSE: exception %s", e)
+            print("SENSE: Location ( %i, %i)" % (x, y))
+            print("SENSE: Frog", self)
 
 
 if __name__ == "__main__":
