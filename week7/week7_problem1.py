@@ -8,16 +8,74 @@
 #
 # Numpy re-write of S&S 11.4 Project 1: Cane Toads
 #
-# Adapted from:
-# Headers provided on CSS458A Sp 2017 GitHub repository
-# __author__ = 'v-caearl'
+# Discussion (part 2)
+# Based on the below-listed averages, it appears that a cohort of Cane Toads
+# will mostly expire over the course of ~19 hours (68,425.2 seconds/3600s/hr)
+# but that approximately 10% (3.73 of ~32) will traverse the field given
+# ~16 AWPs, 25% of which are fenced.
+#
+# Running simulation # 100
+# Average runtime:                                68425.200000
+# Average living toads remaining:                 0.170000
+# Average migrated toads:                         3.730000
+# Average croaked toads:                          28.060000
+#
+# Compared to fencing 0% of the AWPs, this is actually a slight
+# *reduction* in migration prevention!  One possible explanation is that
+# unfenced AWPs near the ingress border can actually attract and halt large
+# groups of Cane Toads which then have a difficult time extracting themselves
+# from the group before they starve.
+
+# Average runtime:                                68710.680000
+# Average living toads remaining:                 0.190000
+# Average migrated toads:                         3.530000
+# Average croaked toads:                          28.010000
+#
+# Fencing 50% of water sources does not seem to change the results much:
+# Average runtime:                                65444.400000
+# Average living toads remaining:                 0.090000
+# Average migrated toads:                         3.800000
+# Average croaked toads:                          27.950000
+# 
+# although it does appear that the number of living Cane Toads remaining
+# *in* the field is reduced.  It almost looks as though fencing AWPs may
+# cause Toads to roam further afield, or there is an error in our logic?
+#
+# Finally, fencing all AWPs had the following results:
+# 
+# Average runtime:                                65082.600000
+# Average living toads remaining:                 0.110000
+# Average migrated toads:                         3.000000
+# Average croaked toads:                          28.550000
+#
+# So it appears that fencing all AWPs did have *some* effect on migration rates,
+# but it appears to be a minimal fix compared to the presumed amount of work.
+#
+# Out of curiousity, I also halved the number of AWPs while leaving fencing
+# rate at 25%:
+# Average runtime:                                62128.440000
+# Average living toads remaining:                 0.140000
+# Average migrated toads:                         4.120000
+# Average croaked toads:                          27.770000
+#
+# Astonishingly, this caused the number of migrating toads to *increase*, *and*
+# increased the number of surviving (albeit very slightly)
+# I would suppose that either: 
+#A) reducing available water points causes the toads to range further afield,
+#   and they are capable of surviving on the water from their prey long enough
+#   to traverse the longer distances between AWPs.
+#B) Some suppositions in S&S are incorrect.
+#C) My implementation of the S&S algorithms is flawed.
+#
+# I would probably need to see some literature on actual Cane Toad behavior
+# to determine which is the issue.
+# - Martin
 
 #============================= IMPORTS =======================================
 import numpy as np
 import matplotlib.animation as animation
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator
-import time
 #============================= END IMPORTS ===================================
 
 #========================== USER ADJUSTABLE (begin) ==========================
@@ -35,8 +93,8 @@ INIT_PERCENTAGE_TOADS   = 0.8   # Percent of start cells with toads in tick 0
 INIT_RANGE              = 0.12  # Random range added to AMT_MIN_INIT at init
 MAY_HOP                 = 0.5   # Chance a toad will hop, barring other needs
 OCCUPIED_VALUE          = 1.0   # Value to set index 2 of a cell when occupied
-PERCENT_AWP             = 0.01  # Percent of desert cells containing AWPs
-PERCENT_AWPS_FENCED     = 0.25  # Can be any float from 0.0 to 1.0
+PERCENT_AWP             = 0.010 # Percent of desert cells containing AWPs
+PERCENT_AWPS_FENCED     = 0.20  # Can be any float from 0.0 to 1.0
 STARVE                  = 0.6   # Internal food level below which toad dies
 UNOCCUPIED_VALUE        = 0.0   # Value to set index 2 of unoccupied cells
 WATER_HOPPING           = 0.002 # Amount of water toad uses up when hopping
@@ -48,7 +106,7 @@ WOULD_LIKE_EAT          = 0.9   # Internal water level below which toad eats
 class Simulation:
     '''Class that runs a Cane Toad simulation'''
 
-    def __init__(self, interval=12, cycles=1200):
+    def __init__(self, interval=24, cycles=2400, plot=True, printout=True):
         '''Constructor/initializer for Simulation.
         
         Args:
@@ -59,16 +117,17 @@ class Simulation:
         # Store runtime information
         self.cycles = cycles
         self.interval = interval
+        self.plot = plot
+        self.printout = printout
 
         # Calculate dT per cycle based on simulation time interval and cycles
         self.dT = (interval * 3600.0)/cycles
-        
-        print("Simulation: dT =", self.dT)
 
         self.field = Field()
-
-        self.fig = plt.figure()
-        self.ax1 = self.fig.add_subplot(1, 1, 1)
+        
+        if self.plot:
+            self.fig = plt.figure()
+            self.ax1 = self.fig.add_subplot(1, 1, 1)
 
 
     def run(self):
@@ -82,7 +141,8 @@ class Simulation:
         '''
         # Grab initial state information
         # Snapshot returns animatable figures
-        snapshots = [self.field.snapshot(self.ax1)]
+        if self.plot:
+            snapshots = [self.field.snapshot(self.ax1)]
         
         # report returns a dict of Alive, Migrated, Croaked counts
         statuses = [self.field.report()]
@@ -99,22 +159,30 @@ class Simulation:
             
             # append time stamp
             times.append(cycle * self.dT)
-            print("Running: ", times[-1])
+            
+            if self.printout:
+                print("Running: ", times[-1])
 
             # run update and record new state information
-            statuses.append(self.field.update(times[-1]))
+            statuses.append(self.field.update())
 
-            # append animation frame of latest 
-            snapshots.append(self.field.snapshot(self.ax1))
+            if self.plot:
+                # append animation frame of latest 
+                snapshots.append(self.field.snapshot(self.ax1))
 
-            print("Counts:", statuses[-1])
+            if self.printout:
+                print("Counts:", statuses[-1])
 
-        print("End time:", times[-1])
-        print("End counts:", statuses[-1])
-        
-        ani = animation.ArtistAnimation(self.fig, snapshots, interval = 50,
-                blit=True)
-        plt.show()
+        if self.printout:
+            print("End time:", times[-1])
+            print("End counts:", statuses[-1])
+       
+        if self.plot:
+            ani = animation.ArtistAnimation(self.fig, snapshots, interval = 50,
+                    blit=True)
+            plt.show()
+
+        return (times, statuses)
 
 
 class Field:
@@ -242,8 +310,6 @@ class Field:
                     # Decide if we shall generate an AWP here
                     if (np.random.rand() < PERCENT_AWP):
 
-                        print("InitWater: Adding AWP at ", row, col)
-
                         # find max of grid or kernel across kernel's area
                         # (we want to merge existing AWPs, not over-write)
                         grid[1,row-2:row+3,col-2:col+3] = np.maximum.reduce( \
@@ -252,7 +318,6 @@ class Field:
                         # Decide if it shall be fenced
                         if (np.random.rand() < PERCENT_AWPS_FENCED):
 
-                            print("InitWater: Fencing AWP at ", row, col)
                             self.fencedAWPs.append([col, row])
 
                             # find maximum of grid or fkernel's "occupied"
@@ -281,10 +346,13 @@ class Field:
         return grid
 
 
-    def update(self, dT):
+    def update(self):
         '''Main state update function.  Calls Toad consumption and movement
-        functions to advance state to next step.  dT might actually be
-        superfluous here.'''
+        functions to advance state to next step.
+
+        Returns:
+            report  (dict):     Dict of Toad counts
+        '''
 
         # Phase 1: consumption
         for toad in self.aliveToads:
@@ -317,7 +385,12 @@ class Field:
 
 
     def report(self):
-        '''Return information on current toad status'''
+        '''Return information on current toad status.
+        
+        Returns:
+            status (dict):  Dictionary with Alive, Migrated, and Croaked
+                            Toad counts.
+        '''
 
         return {"Alive":len(self.aliveToads),
                 "Migrated":len(self.migratedToads),
@@ -325,8 +398,19 @@ class Field:
 
     def snapshot(self, axis):
         '''Generate an animatable snapshot of the current field state,
-        including toads'''
+        including toads.
+        
+        Args:
+            axis (pyplot axis)  plot.fig.axis component into which to draw
+                                the current frame.
 
+        Returns:
+            layers (list)       List of artists (layers) for this frame.
+                                Will be passed to animation.ArtistAnimation
+                                for animated display, if the simulation
+                                holding this Field was instantiated with
+                                the plot option turned on.
+        '''
         toadX = []
         toadY = []
 
@@ -494,7 +578,12 @@ class Toad:
 
     def hopForFun(self):
         '''Choose a random direction in which to hop.  But if on a border,
-        hop west'''
+        hop west
+        
+        Returns:
+            target      (list):         Y, X (Row, Column) offset of target
+                                        destination cell
+        '''
         x, y = self.pos
         field = self.field
         cellWater = field.grid[1,y,x]
@@ -530,7 +619,8 @@ class Toad:
             surroundings (ndarray):     List of surrounding cells
 
         Returns:
-            target      (index):        Index of cell to go to
+            target      (list):         Y, X (Row, Column) offset of target
+                                        destination cell
         '''
         x, y = self.pos
         field = self.field
@@ -576,7 +666,8 @@ class Toad:
             surroundings (ndarray):     List of surrounding cells
 
         Returns:
-            target      (index):        Index of cell to go to
+            target      (list):         Y, X (Row, Column) offset of target
+                                        destination cell
         '''
         x, y = self.pos
         field = self.field
@@ -611,22 +702,41 @@ class Toad:
 
 
     def stay(self):
+        '''Perform "stay" action; that is, don't move, and use 50% of the
+        energy and water used while hopping'''
 
         self.energy = self.energy - ENERGY_HOPPING / 2.0
         self.water = self.water - WATER_HOPPING / 2.0
 
 
     def dessicated(self):
+        '''Calculates whether this Toad has dried up to that point that
+        it would expire.
+
+        Returns:
+            dessicated (bool):      True if dried up, False otherwise
+        '''
 
         return self.water < DESSICATE
 
 
     def starved(self):
+        '''Calculates whether this Toad has starved to death.
+
+        Returns:
+            starved (bool):     True if starved, False otherwise
+
+        '''
 
         return self.energy < STARVE
 
 
     def migrated(self):
+        '''Calculates and returns this Toad's migrated state - whether it has
+        reached the western edge and can migrate out of the field.
+        
+        Returns:
+            migrated (bool):    True if Toad has reached column 0'''
 
         return self.pos[0] == 0
 
@@ -644,6 +754,41 @@ class Toad:
 
 if __name__ == "__main__":
 
-    sim = []
-    sim.append(Simulation())
-    sim[0].run()
+    # Store final results from each sim pass
+    # In the form of a tuple containing the end time stamp and
+    # final alive/migrated/croaked counts.
+    # These will be further refined into separate ndarrays
+
+    results = []
+    for i in range(1, 101):
+        
+        print("Running simulation # %i" % (i,))
+        
+        sim = Simulation(plot=False, printout=False)
+        temp = sim.run()
+        results.append((temp[0][-1], temp[1][-1]))
+
+    # Break down results for numpy averaging
+    runtimes, alive, migrated, croaked = np.zeros((4, len(results)), dtype='d')
+    for j in range(len(results)):
+        runtimes[j] = results[j][0]
+        alive[j] = results[j][1]["Alive"]
+        migrated[j] = results[j][1]["Migrated"]
+        croaked[j] = results[j][1]["Croaked"]
+
+    # Print averages over the total number of runs
+    print("Average runtime:\t\t\t\t%f" % (np.mean(runtimes)))
+    print("Average living toads remaining:\t\t\t%f" % (np.mean(alive)))
+    print("Average migrated toads:\t\t\t\t%f" % (np.mean(migrated)))
+    print("Average croaked toads:\t\t\t\t%f" % (np.mean(croaked)))
+
+    sim = Simulation(interval=12,cycles=1200, printout=False)
+    output = sim.run()
+    # After animation is done, collate alive toad counts and do
+    # cross-correlation plot.
+    for i in range(len(output)):
+        alive[i] = results[i][1]["Alive"]
+
+    plt.xcorr(alive, alive)
+    plt.show()
+
