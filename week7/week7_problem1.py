@@ -342,11 +342,11 @@ class Field:
             fenceY.append(AWP[1])
         
         fieldMap = axis.matshow(self.grid[2])
-        fieldFood = axis.matshow(self.grid[0])
+        fieldFood = axis.matshow(np.clip(self.grid[0], 0,
+            FOOD_CELL),cmap='Greys')
 
         water = np.ma.masked_where(self.grid[1] <= 0, self.grid[1])
         fieldWater = axis.matshow(water)
-        #fieldWater = axis.matshow(self.grid[1])
 
         fieldFenced = axis.scatter(fenceX, fenceY, c='r', marker='s')
         fieldToads = axis.scatter(toadX, toadY, c='y')
@@ -645,5 +645,5 @@ class Toad:
 if __name__ == "__main__":
 
     sim = []
-    sim.append(Simulation(cycles=20))
+    sim.append(Simulation())
     sim[0].run()
