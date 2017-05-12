@@ -36,7 +36,7 @@ INIT_RANGE              = 0.12  # Random range added to AMT_MIN_INIT at init
 MAY_HOP                 = 0.5   # Chance a toad will hop, barring other needs
 OCCUPIED_VALUE          = 1.0   # Value to set index 2 of a cell when occupied
 PERCENT_AWP             = 0.01  # Percent of desert cells containing AWPs
-PERCENT_AWPS_FENCED     = 0.25   # Can be any float from 0.0 to 1.0
+PERCENT_AWPS_FENCED     = 0.25  # Can be any float from 0.0 to 1.0
 STARVE                  = 0.6   # Internal food level below which toad dies
 UNOCCUPIED_VALUE        = 0.0   # Value to set index 2 of unoccupied cells
 WATER_HOPPING           = 0.002 # Amount of water toad uses up when hopping
@@ -65,11 +65,10 @@ class Simulation:
         
         print("Simulation: dT =", self.dT)
 
-        self.numAlive = 0
-        self.numCroaked = 0
-        self.numMigrated = 0
-
         self.field = Field()
+
+        self.fig = plt.figure()
+        self.ax1 = self.fig.add_subplot(1, 1, 1)
 
 
     def run(self):
@@ -83,14 +82,16 @@ class Simulation:
         '''
         # Grab initial state information
         # Snapshot returns animatable figures
-        snapshots = [self.field.snapshot()]
+        snapshots = [self.field.snapshot(self.ax1)]
         
         # report returns a dict of Alive, Migrated, Croaked counts
         statuses = [self.field.report()]
 
+        # Initialize times and current cycle, for later logging
         times = [0]
         cycle = 0
 
+        # Continue running while toads remain and we're not at the cycle limit
         while (not self.field.exterminated() and cycle < self.cycles):
 
             # Increment cycle
@@ -104,13 +105,16 @@ class Simulation:
             statuses.append(self.field.update(times[-1]))
 
             # append animation frame of latest 
-            snapshots.append(self.field.snapshot())
+            snapshots.append(self.field.snapshot(self.ax1))
 
             print("Counts:", statuses[-1])
 
         print("End time:", times[-1])
         print("End counts:", statuses[-1])
-
+        
+        ani = animation.ArtistAnimation(self.fig, snapshots, interval = 50,
+                blit=True)
+        plt.show()
 
 
 class Field:
@@ -121,6 +125,8 @@ class Field:
         
         self.width = width
         self.height = height
+
+        self.fencedAWPs = []
 
         # Instantiate the grid on which simulation runs
         # Each grid location contains 3 values:
@@ -247,6 +253,7 @@ class Field:
                         if (np.random.rand() < PERCENT_AWPS_FENCED):
 
                             print("InitWater: Fencing AWP at ", row, col)
+                            self.fencedAWPs.append([col, row])
 
                             # find maximum of grid or fkernel's "occupied"
                             # value.  Fenced areas should definitely override
@@ -316,12 +323,35 @@ class Field:
                 "Migrated":len(self.migratedToads),
                 "Croaked":len(self.croakedToads)}
 
-    def snapshot(self):
+    def snapshot(self, axis):
         '''Generate an animatable snapshot of the current field state,
         including toads'''
 
-        return "Click"
+        toadX = []
+        toadY = []
 
+        for toad in self.aliveToads:
+            toadX.append(toad.pos[0])
+            toadY.append(toad.pos[1])
+
+        fenceX = []
+        fenceY = []
+
+        for AWP in self.fencedAWPs:
+            fenceX.append(AWP[0])
+            fenceY.append(AWP[1])
+        
+        fieldMap = axis.matshow(self.grid[2])
+        fieldFood = axis.matshow(self.grid[0])
+
+        water = np.ma.masked_where(self.grid[1] <= 0, self.grid[1])
+        fieldWater = axis.matshow(water)
+        #fieldWater = axis.matshow(self.grid[1])
+
+        fieldFenced = axis.scatter(fenceX, fenceY, c='r', marker='s')
+        fieldToads = axis.scatter(toadX, toadY, c='y')
+
+        return [fieldMap, fieldFood, fieldWater, fieldFenced, fieldToads]
 
 
 class Toad:
@@ -380,8 +410,6 @@ class Toad:
             # Calculate how much water was in the food and add to water stores
             # Water cannot exceed 1.0
             self.water += np.amin([1-self.water, (amtEat * FRACTION_WATER)])
-            print("CONSUME: Toad consumed %f food at (%i, %i)" % (amtEat, x,
-                y))
 
         # Next, water (exactly like food, but does not decrease resource)
         if(self.water < WOULD_LIKE_DRINK):
@@ -392,9 +420,6 @@ class Toad:
                 amtDrink = 0
 
             self.water += amtDrink
-            print("CONSUME: Toad consumed %f water at (%i, %i)" % (amtDrink, x,
-                y))
-
 
         if self.energy > 1.0:
             self.energy = 1.0
@@ -615,23 +640,10 @@ class Toad:
         adjs = np.copy(self.field.grid[:,y-1:y+2, x-1:x+2])
         adjs[:,1,1] = [-2, -2, 2] # Set middle to dummy values
         return adjs
-#        try:
-#            if(adjs.size == 27):
-#                # Returns sensed values in N, NE, E, SE, S, SW, W, NW order
-#                return (adjs[:,0,1], adjs[:,0,2], adjs[:,1,2], adjs[:,2,2],
-#                        adjs[:,2,1], adjs[:,2,0], adjs[:,1,0], adjs[:,0,0])
-#            else: #Should only happen while on the "start" border.
-#                # Duplicate current column's values to NE,E,SE readings
-#                return (adjs[:,0,1], adjs[:,0,1], adjs[:,1,1],adjs[:,2,1],
-#                        adjs[:,2,1], adjs[:,2,0], adjs[:,1,0],adjs[:,0,0])
-#        except IndexError as e:
-#            print("SENSE: exception %s", e)
-#            print("SENSE: Location ( %i, %i)" % (x, y))
-#            print("SENSE: Frog", self)
-#
-#
+
+
 if __name__ == "__main__":
 
     sim = []
-    sim.append(Simulation())
+    sim.append(Simulation(cycles=20))
     sim[0].run()
